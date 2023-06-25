@@ -1,0 +1,10 @@
+1;pperic;mmarkovic;1;0.0;2023-06-01 11:00;OTKAZAO_KLIJENT
+2;pperic;mmarkovic;3;1500.0;2023-06-02 19:00;IZVRSEN
+3;mmisic;mmarkovic;4;590.0;2023-06-03 18:00;OTKAZAO_KLIJENT
+4;pperic;mmarkovic;5;4600.0;2023-06-04 18:00;NIJE_SE_POJAVIO
+5;mmisic;mmilakic;7;1900.0;2023-06-05 08:00;ZAKAZAN
+6;pperic;mmilakic;6;2600.0;2023-06-06 08:00;ZAKAZAN
+7;mmicic;mmilakic;2;300.0;2023-06-23 12:00;OTKAZAO_KLIJENT
+8;mmicic;mmarkovic;5;4600.0;2023-07-27 13:00;ZAKAZAN
+9;mmicic;mmilakic;7;1900.0;2023-06-29 08:00;ZAKAZAN
+10;mmicic;mmilakic;5;4600.0;2023-07-27 09:00;ZAKAZAN

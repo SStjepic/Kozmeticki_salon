@@ -1,0 +1,3 @@
+idTipaTretmana:4
+idZakazanogTretmana:11
+idKozmetickogTretmana:8
