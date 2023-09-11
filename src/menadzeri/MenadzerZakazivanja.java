@@ -271,7 +271,7 @@ public class MenadzerZakazivanja {
 		if(mesec>LocalDate.now().getMonthValue()) {
 			pocetak = pocetak.minusYears(1);
 		}
-		LocalDate kraj = pocetak.withDayOfMonth(pocetak.getMonth().length(pocetak.isLeapYear()));
+		LocalDate kraj = pocetak.plusMonths(1);
 		for(ZakazanTretman zt: this.sviZakazaniTretmani.values()) {
 			LocalDate termin = zt.getTermin().toLocalDate();
 			if(termin.isAfter(pocetak) && termin.isBefore(kraj)) {
@@ -286,7 +286,7 @@ public class MenadzerZakazivanja {
 		if(mesec>LocalDate.now().getMonthValue()) {
 			pocetak = pocetak.minusYears(1);
 		}
-		LocalDate kraj = pocetak.withDayOfMonth(pocetak.getMonth().length(pocetak.isLeapYear()));
+		LocalDate kraj = pocetak.plusMonths(1);
 		for(Osoba o: menadzerOsoblja.sveOsobe().values()) {
 			if(o instanceof Zaposleni) {
 				Zaposleni z = (Zaposleni) o;
@@ -300,7 +300,7 @@ public class MenadzerZakazivanja {
 		double prihod = 0;
 		for(ZakazanTretman zt: this.sviZakazaniTretmani.values()) {
 			LocalDate termin = zt.getTermin().toLocalDate();
-			if(termin.isAfter(od_dana) && termin.isBefore(do_dana) && zt.getKozmeticar().getKorisnickoIme().equals(korisnickoImeKozmeticara)) {
+			if(termin.isAfter(od_dana.minusDays(1)) && termin.isBefore(do_dana.plusDays(1)) && zt.getKozmeticar().getKorisnickoIme().equals(korisnickoImeKozmeticara)) {
 				prihod+=zt.getCena();
 			}
 		}
@@ -310,7 +310,7 @@ public class MenadzerZakazivanja {
 		HashMap<String, Double> spisak = new HashMap<String, Double>();
 		for(ZakazanTretman zt: this.sviZakazaniTretmani.values()) {
 			LocalDate termin = zt.getTermin().toLocalDate();
-			if(termin.isAfter(od_dana) && termin.isBefore(do_dana)) {
+			if(termin.isAfter(od_dana.minusDays(1)) && termin.isBefore(do_dana.plusDays(1))) {
 				double cena = zt.getCena();
 				String korisnickoImeKozmeticara = zt.getKozmeticar().getKorisnickoIme();
 				if(spisak.containsKey(korisnickoImeKozmeticara)) {
@@ -424,7 +424,9 @@ public class MenadzerZakazivanja {
 		if(mesec>LocalDate.now().getMonthValue()) {
 			pocetak = pocetak.minusYears(1);
 		}
-		LocalDate kraj = pocetak.withDayOfMonth(pocetak.getMonth().length(pocetak.isLeapYear()));
+		LocalDate kraj = pocetak.plusMonths(1);
+
+		
 		for(ZakazanTretman zt: this.sviZakazaniTretmani.values()) {
 			LocalDate termin = zt.getTermin().toLocalDate();
 			if(termin.isAfter(pocetak) && termin.isBefore(kraj) && zt.getVrstaTretmana().getTipTretmana().getSifra() == IdTipa) {
@@ -440,11 +442,14 @@ public class MenadzerZakazivanja {
 		int mesec = LocalDate.now().getMonthValue();
 		for(TipKozmetickogTretmana tkt: menadzerTretmana.sviTipoviTretmana()) {
 			prihod = new ArrayList<Double>();
+			LocalDate trenutnaGodina = LocalDate.now();
 			for(int i = 0; i < 12; i++) {
-				int trenutni = (mesec+i)%12 + 1;
+				int trenutni = Integer.parseInt(trenutnaGodina.toString().split("-")[1]);
 				prihod.add(prihodZaMesecPoTipu(trenutni, tkt.getSifra()));
+			    trenutnaGodina = trenutnaGodina.minusMonths(1);
 			}
 			spisak.put(tkt.getNaziv(), prihod);
+
 		}
 		return spisak;
 	}
@@ -452,7 +457,7 @@ public class MenadzerZakazivanja {
 		double prihod = 0;
 		for(ZakazanTretman zt: this.sviZakazaniTretmani.values()) {
 			LocalDate termin = zt.getTermin().toLocalDate();
-			if(termin.isAfter(od_dana) && termin.isBefore(do_dana)) {
+			if(termin.isAfter(od_dana.minusMonths(1)) && termin.isBefore(do_dana.plusDays(1))) {
 				prihod+=zt.getCena();
 			}
 		}
@@ -460,8 +465,7 @@ public class MenadzerZakazivanja {
 	}
 	public double rashodZaPeriod(LocalDate od_dana, LocalDate do_dana) {
 		double rashod = 0;
-		long meseci = ChronoUnit.MONTHS.between(od_dana, do_dana);
-		meseci += 1;
+		long meseci = ChronoUnit.MONTHS.between(od_dana.minusDays(1), do_dana.minusDays(1));
 		for(Osoba o: menadzerOsoblja.sveOsobe().values()) {
 			if(o instanceof Zaposleni) {
 				rashod += meseci * ((Zaposleni)o).getPlata();
@@ -474,9 +478,11 @@ public class MenadzerZakazivanja {
 	public List<Double> godisnjiPrihodPoMesecima(){
 		List<Double> prihod = new ArrayList<Double>();
 		int mesec = LocalDate.now().getMonthValue();
+	    LocalDate trenutnaGodina = LocalDate.now();
 		for(int i = 0; i < 12; i++) {
-			int trenutni = (mesec+i)%12 + 1;
+			int trenutni = Integer.parseInt( trenutnaGodina.toString().split("-")[1]);
 			prihod.add(prihodZaMesec(trenutni));
+			trenutnaGodina = trenutnaGodina.minusMonths(1);
 		}
 		return prihod;
 	}

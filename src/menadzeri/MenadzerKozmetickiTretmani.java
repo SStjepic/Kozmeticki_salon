@@ -196,14 +196,15 @@ public class MenadzerKozmetickiTretmani {
 	public void obrisiTipKozmetickogTretmana(int idTipaTretmana) {
 		TipKozmetickogTretmana tkt = nadjiTipTretmana(idTipaTretmana);
 		tkt.obrisiTipTretmana();
-		for(KozmetickiTretman kt:sviKozmetickiTretmani.values()) {
+		for(KozmetickiTretman kt: KozmetickiTretmani().values()) {
 			if(kt.getTipTretmana().getSifra() == idTipaTretmana) {
 				obrisiKozmetickiTretman(kt.getidKozmetickogTretmana());
 			}
 		}
+		upisiPodatke();
 	}
 	public boolean proveriJedinstvenostKozmetickogTretmana(String nazivKozmetickogTretmana) {
-		for(KozmetickiTretman kt: sviKozmetickiTretmani.values()) {
+		for(KozmetickiTretman kt: KozmetickiTretmani().values()) {
 			if(kt.getNaziv().equals(nazivKozmetickogTretmana))
 				return false;
 		}

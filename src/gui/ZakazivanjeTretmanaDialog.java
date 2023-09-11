@@ -88,6 +88,7 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 	private JLabel lblNewLabel_9;
 	private JTextField vremeOd;
 	private JTextField vremeDo;
+	private JButton btnNewButton_2;
 
 	/**
 	 * Create the dialog.
@@ -101,7 +102,7 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 		
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setBounds(100, 100, 972, 473);
-		getContentPane().setLayout(new MigLayout("", "[][][][150.00][75.00][64.00,grow][75.00,leading][][113.00,grow][110.00,grow][grow][grow][][][67.00,trailing]", "[][][][][][][][][20.00][][][][][][]"));
+		getContentPane().setLayout(new MigLayout("", "[][][][150.00][75.00][64.00,grow][75.00,leading][][113.00,grow][110.00,grow][67.00,trailing]", "[][][][][][][][][][][]"));
 		
 		JLabel lblNewLabel = new JLabel("Klijent");
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -133,7 +134,7 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 		sortiranjeTabela.setModel((AbstractTableModel) table.getModel());
 		table.setRowSorter(sortiranjeTabela);
 		JScrollPane scrollPane = new JScrollPane(table);
-		getContentPane().add(scrollPane, "cell 1 1 6 7,grow");
+		getContentPane().add(scrollPane, "cell 1 1 6 6,grow");
 		
 		JLabel lblNewLabel_1 = new JLabel("Tip tretmana");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -147,6 +148,20 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 		tipCB.setSelectedIndex(-1);
 		getContentPane().add(tipCB, "cell 8 1 2 1,growx");
 		tipCB.addItemListener(new izdvojKozmetickeTretmane());
+		
+		btnNewButton_2 = new JButton("Restartuj");
+		btnNewButton_2.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				tipCB.setSelectedIndex(-1);
+				cenaDo.setText("");
+				cenaOd.setText("");
+				pretragaNaziv.setText("");
+				vremeDo.setText("");
+				vremeOd.setText("");
+			}
+		});
+		getContentPane().add(btnNewButton_2, "cell 10 1");
 		
 		JLabel lblNewLabel_6 = new JLabel("Cena od/do");
 		lblNewLabel_6.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -247,15 +262,16 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 		
 		JLabel lblNewLabel_8 = new JLabel("Cena za klijenta");
 		lblNewLabel_8.setFont(new Font("Tahoma", Font.BOLD, 12));
-		getContentPane().add(lblNewLabel_8, "cell 4 9,alignx trailing");
+		getContentPane().add(lblNewLabel_8, "cell 4 7,alignx trailing");
 		
 		cenaKlijent = new JTextField();
-		getContentPane().add(cenaKlijent, "cell 5 9 2 1,growx");
+		cenaKlijent.setEnabled(false);
+		getContentPane().add(cenaKlijent, "cell 5 7 2 1,growx");
 		cenaKlijent.setColumns(10);
 		
 		datumValidacija = new JLabel("");
 		datumValidacija.setFont(new Font("Tahoma", Font.BOLD, 12));
-		getContentPane().add(datumValidacija, "cell 3 10");
+		getContentPane().add(datumValidacija, "cell 3 8");
 		
 		cenaDo = new JTextField();
 		getContentPane().add(cenaDo, "cell 9 3,growx");
@@ -353,25 +369,25 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 		
 		JLabel lblNewLabel_5 = new JLabel("Kozmeticar");
 		lblNewLabel_5.setFont(new Font("Tahoma", Font.BOLD, 12));
-		getContentPane().add(lblNewLabel_5, "cell 1 9,alignx trailing");
+		getContentPane().add(lblNewLabel_5, "cell 1 7,alignx trailing");
 		
 		kozmeticariCB = new JComboBox();
-		getContentPane().add(kozmeticariCB, "cell 2 9,growx");
+		getContentPane().add(kozmeticariCB, "cell 2 7,growx");
 		
 		JLabel lblNewLabel_3 = new JLabel("Datum");
 		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 12));
-		getContentPane().add(lblNewLabel_3, "cell 1 10,alignx right");
-		getContentPane().add(dateChooser, "cell 2 10,growx,aligny top");
+		getContentPane().add(lblNewLabel_3, "cell 1 8,alignx right");
+		getContentPane().add(dateChooser, "cell 2 8,growx,aligny top");
 		
 		JLabel lblNewLabel_4 = new JLabel("Vreme");
 		lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD, 12));
-		getContentPane().add(lblNewLabel_4, "cell 1 11,alignx trailing");
+		getContentPane().add(lblNewLabel_4, "cell 1 9,alignx trailing");
 		
 		satnicaCB = new JComboBox();
-		getContentPane().add(satnicaCB, "cell 2 11,growx");
+		getContentPane().add(satnicaCB, "cell 2 9,growx");
 		
-		getContentPane().add(btnNewButton_1, "flowx,cell 2 14,growx");
-		getContentPane().add(btnNewButton, "cell 2 14,growx");
+		getContentPane().add(btnNewButton_1, "flowx,cell 2 10,growx");
+		getContentPane().add(btnNewButton, "cell 2 10,growx");
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setLocationRelativeTo(null);
@@ -380,15 +396,12 @@ public class ZakazivanjeTretmanaDialog extends JDialog {
 	
 	class izdvojKozmetickeTretmane implements ItemListener {
 		public void itemStateChanged(ItemEvent e) {
-			ArrayList<KozmetickiTretman> tkt = mkt.odgovarajuciKozmetickiTretmani((TipKozmetickogTretmana) tipCB.getSelectedItem());
-			
-			if(tkt.isEmpty()) {
-			}
-			else {
+			if(e.getItem()!=null) {
 				sortirajPrikaz();
 			}
-			}
+
 		}
+	}
 	
 	public void sortirajPrikaz() {
 		List<RowFilter<Object,Object>> filteri = new ArrayList<RowFilter<Object,Object>>(6);

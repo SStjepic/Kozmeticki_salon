@@ -30,7 +30,7 @@ import javax.swing.table.TableRowSorter;
 import org.knowm.xchart.PieChart;
 import org.knowm.xchart.SwingWrapper;
 
-import grafici.GodisnjiPrihodPoTipuGrafik;
+import grafici.GodisnjiPrihod;
 import grafici.KozmeticariGrafik;
 import grafici.StatusiGrafik;
 import gui.ZakazivanjeTretmanaDialog.izdvojKozmetickeTretmane;
@@ -47,6 +47,7 @@ import model.KozmeticarModel;
 import model.KozmetickiTretmanMenadzerModel;
 import model.MenadzerModel;
 import model.RecepcionerModel;
+import model.TipTretmanaModel;
 import model.ZakazanTretmanMenadzerModel;
 import net.miginfocom.swing.MigLayout;
 import usluge.KozmetickiTretman;
@@ -68,7 +69,7 @@ public class MenadzerFrame extends JFrame {
 	private JPanel contentPane;
 	private JTable table;
 	protected TableRowSorter<AbstractTableModel> sortiranjeTabela = new TableRowSorter<AbstractTableModel>();
-	private JButton dugmeIzvestaj, dugmeTip;
+	private JButton dugmeIzvestaj;
 	private JButton btnNewButton_6;
 	private JButton btnNewButton_8;
 	private JLabel rashod;
@@ -106,6 +107,7 @@ public class MenadzerFrame extends JFrame {
 		prikazCB.addItem("Menadžeri");
 		prikazCB.addItem("Kozmetički tretmani");
 		prikazCB.addItem("Zakazani tretmani");
+		prikazCB.addItem("Tipovi Kozmetičkih tretmana");
 		prikazCB.setSelectedIndex(-1);
 		prikazCB.addItemListener(new podesiDugmice());
 		contentPane.add(prikazCB, "cell 2 1,growx");
@@ -147,14 +149,6 @@ public class MenadzerFrame extends JFrame {
 		});
 		contentPane.add(btnNewButton_7, "cell 8 1,growx");
 		
-		dugmeTip = new JButton("Izmeni Tip Tretmana");
-		dugmeTip.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				IzmenaTipaTretmanaDialog iztip = new IzmenaTipaTretmanaDialog(mkt, MenadzerFrame.this);
-			}
-		});
-		
 		JButton btnNewButton_12 = new JButton("Prikaži izveštaj");
 		btnNewButton_12.addMouseListener(new MouseAdapter() {
 			@Override
@@ -186,7 +180,7 @@ public class MenadzerFrame extends JFrame {
 					SwingUtilities.invokeLater(() -> {
 						HashMap<String, List<Double>> spisak = mz.godisnjiPrihodPoTipuPoMesecu();
 						 List<Double> prihod = mz.godisnjiPrihodPoMesecima();
-						GodisnjiPrihodPoTipuGrafik grafik  = new GodisnjiPrihodPoTipuGrafik(spisak,prihod);
+						GodisnjiPrihod gp = new GodisnjiPrihod(spisak, prihod);
 				    });
 				}
 				else if(statistikaCB.getSelectedIndex() == 1) {
@@ -207,11 +201,10 @@ public class MenadzerFrame extends JFrame {
 			}
 		});
 		contentPane.add(statistikaCB, "cell 1 5,growx");
-		contentPane.add(dugmeTip, "cell 2 5,growx");
 		
 		naslovTabele = new JLabel("Odaberi prikaz");
 		naslovTabele.setFont(new Font("Tahoma", Font.BOLD, 12));
-		contentPane.add(naslovTabele, "cell 4 7,alignx center");
+		contentPane.add(naslovTabele, "cell 3 7 3 1,alignx center");
 		table = new JTable();
 		table.setRowSorter(sortiranjeTabela);
 		scrollPane = new JScrollPane(table);
@@ -263,6 +256,10 @@ public class MenadzerFrame extends JFrame {
 			KozmeticarModel sm = (KozmeticarModel)this.table.getModel();
 			sm.fireTableDataChanged();
 		}
+		else if(this.table.getModel() instanceof TipTretmanaModel) {
+			TipTretmanaModel sm = (TipTretmanaModel)this.table.getModel();
+			sm.fireTableDataChanged();
+		}
 	}
 	class omoguciDugmice implements ListSelectionListener {
 		@Override
@@ -277,12 +274,16 @@ public class MenadzerFrame extends JFrame {
 					izmeni.setEnabled(true);
 					dodaj.setEnabled(true);
 				}
+				if(MenadzerFrame.this.table.getModel() instanceof TipTretmanaModel) {
+					obrisi.setEnabled(true);
+					izmeni.setEnabled(true);
+					dodaj.setEnabled(false);
+				}
 				else if(MenadzerFrame.this.table.getModel() instanceof ZakazanTretmanMenadzerModel) {
 					dodaj.setEnabled(true);
 					if(((String)table.getValueAt(table.getSelectedRow(), 7)).equals(MenadzerKozmetickiTretmani.status.ZAKAZAN.toString())) {
 						izmeni.setEnabled(true);
 					}
-
 				}
 			}	
 		}
@@ -299,233 +300,255 @@ public class MenadzerFrame extends JFrame {
 			if(dodaj.getMouseListeners().length >1) {
 				dodaj.removeMouseListener(dodaj.getMouseListeners()[1]);
 			}
-			obrisi.setEnabled(false);
 			dodaj.setEnabled(true);
-			izmeni.setEnabled(false);
-				if(prikazCB.getSelectedIndex() == 0) {
-					
-					table.setModel(new KlijentModel(mo));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Klijenti");
+			if(prikazCB.getSelectedIndex() == 0) {
+				
+				table.setModel(new KlijentModel(mo));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Klijenti");
 
-					obrisi.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(obrisi.isEnabled()) {
-								mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-								osveziPodatke();
+				obrisi.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+							osveziPodatke();
+						}
+					}
+				});
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							try {
+								Klijent k = (Klijent) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+								IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, k, MenadzerFrame.this);
+							}catch(Exception ex) {
 							}
 						}
-					});
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								try {
-									Klijent k = (Klijent) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-									IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, k, MenadzerFrame.this);
-								}catch(Exception ex) {
+
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							RegistracijaDialog rd = new RegistracijaDialog(mks, "klijent",MenadzerFrame.this);
+						}
+					}
+				});
+			}
+			else if(prikazCB.getSelectedIndex() == 1) {
+				table.setModel(new KozmeticarModel(mo, mkt));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Kozmetičari");
+				
+				obrisi.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+							osveziPodatke();
+						}
+
+					}
+				});
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							try {
+								Kozmeticar k = (Kozmeticar) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+								IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, k, MenadzerFrame.this);
+							}catch(Exception ex) {
+							}
+						}
+
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							RegistracijaDialog rd = new RegistracijaDialog(mks, "kozmeticar",MenadzerFrame.this);
+						}
+
+					}
+				});
+
+				
+			}else if(prikazCB.getSelectedIndex() == 2) {
+				table.setModel(new RecepcionerModel(mo));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Recepcioneri");
+				
+				obrisi.addMouseListener(new MouseAdapter() {
+					
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+							osveziPodatke();
+						}
+
+					}
+				});
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							try {
+								Recepcioner r = (Recepcioner) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+								IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, r, MenadzerFrame.this);
+							}catch(Exception ex) {
+							}
+						}
+
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							RegistracijaDialog rd = new RegistracijaDialog(mks, "recepcioner",MenadzerFrame.this);
+						}
+
+					}
+				});
+				
+			}else if(prikazCB.getSelectedIndex() == 3) {
+				table.setModel(new MenadzerModel(mo));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Menadžeri");
+				
+				obrisi.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+							osveziPodatke();
+						}
+
+					}
+				});
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							try {
+								Menadzer m = (Menadzer) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
+								IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, m, MenadzerFrame.this);
+							}catch(Exception ex) {
+							}
+						}
+
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							RegistracijaDialog rd = new RegistracijaDialog(mks, "menadzer",MenadzerFrame.this);
+						}
+
+					}
+				});
+				
+			}else if(prikazCB.getSelectedIndex() == 4) {
+				table.setModel(new KozmetickiTretmanMenadzerModel(mkt));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Tretmani");
+				
+				obrisi.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mkt.obrisiKozmetickiTretman((int)table.getValueAt(table.getSelectedRow(), 0));
+							osveziPodatke();
+						}
+
+					}
+				});
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							IzmenaKozmetickogTretmanaDialog izmena = new IzmenaKozmetickogTretmanaDialog(mks, MenadzerFrame.this, (KozmetickiTretman)table.getValueAt(table.getSelectedRow(),1));
+						}
+
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							KreiranjeKozmetickogTretmanaDialog ktd = new KreiranjeKozmetickogTretmanaDialog(mks, MenadzerFrame.this);
+						}
+
+					}
+				});
+				
+			}else if(prikazCB.getSelectedIndex() == 5) {
+				table.setModel(new ZakazanTretmanMenadzerModel(mz));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi Zakazani Tretmani");
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							try {
+								if(((String)table.getValueAt(table.getSelectedRow(), 7)).equals(MenadzerKozmetickiTretmani.status.ZAKAZAN.toString())) {
+									ZakazanTretman zt = (ZakazanTretman)table.getValueAt(table.getSelectedRow(), 1);
+									IzmenaZakazanogTretmanaDialog izt = new IzmenaZakazanogTretmanaDialog(zt, mks, MenadzerFrame.this);
 								}
-							}
 
-						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								RegistracijaDialog rd = new RegistracijaDialog(mks, "klijent",MenadzerFrame.this);
+							}catch(Exception ex) {
 							}
 						}
-					});
-				}
-				else if(prikazCB.getSelectedIndex() == 1) {
-					table.setModel(new KozmeticarModel(mo, mkt));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Kozmetičari");
-					
-					obrisi.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(obrisi.isEnabled()) {
-								mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-								osveziPodatke();
-							}
-
+					}
+				});
+				dodaj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(dodaj.isEnabled()) {
+							ZakazivanjeTretmanaDialog ztd = new ZakazivanjeTretmanaDialog(mks, null, MenadzerFrame.this);
 						}
-					});
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								try {
-									Kozmeticar k = (Kozmeticar) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-									IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, k, MenadzerFrame.this);
-								}catch(Exception ex) {
-								}
-							}
 
+					}
+				});
+			}else if(prikazCB.getSelectedIndex() == 6) {
+				dodaj.setEnabled(false);
+				table.setModel(new TipTretmanaModel(mkt));
+				podesiTabelu();
+				osveziPodatke();
+				naslovTabele.setText("Svi tipovi kozmetičkih tretmana");
+				izmeni.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(izmeni.isEnabled()) {
+							TipKozmetickogTretmana tkt = mkt.nadjiTipTretmana((Integer)table.getValueAt(table.getSelectedRow(), 0));
+							IzmenaTipaTretmanaDialog itt = new IzmenaTipaTretmanaDialog(mkt, MenadzerFrame.this, tkt);
 						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								RegistracijaDialog rd = new RegistracijaDialog(mks, "kozmeticar",MenadzerFrame.this);
-							}
-
+					}
+				});
+				obrisi.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if(obrisi.isEnabled()) {
+							mkt.obrisiTipKozmetickogTretmana((Integer)table.getValueAt(table.getSelectedRow(), 0));
+							osveziPodatke();
 						}
-					});
-
-					
-				}else if(prikazCB.getSelectedIndex() == 2) {
-					table.setModel(new RecepcionerModel(mo));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Recepcioneri");
-					
-					obrisi.addMouseListener(new MouseAdapter() {
-						
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(obrisi.isEnabled()) {
-								mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-								osveziPodatke();
-							}
-
-						}
-					});
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								try {
-									Recepcioner r = (Recepcioner) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-									IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, r, MenadzerFrame.this);
-								}catch(Exception ex) {
-								}
-							}
-
-						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								RegistracijaDialog rd = new RegistracijaDialog(mks, "recepcioner",MenadzerFrame.this);
-							}
-
-						}
-					});
-					
-				}else if(prikazCB.getSelectedIndex() == 3) {
-					table.setModel(new MenadzerModel(mo));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Menadžeri");
-					
-					obrisi.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(obrisi.isEnabled()) {
-								mo.obrisiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-								osveziPodatke();
-							}
-
-						}
-					});
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								try {
-									Menadzer m = (Menadzer) mo.nadjiOsobu((String)table.getValueAt(table.getSelectedRow(), 2));
-									IzmenaOsobaDialog iod = new IzmenaOsobaDialog(mks, m, MenadzerFrame.this);
-								}catch(Exception ex) {
-								}
-							}
-
-						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								RegistracijaDialog rd = new RegistracijaDialog(mks, "menadzer",MenadzerFrame.this);
-							}
-
-						}
-					});
-					
-				}else if(prikazCB.getSelectedIndex() == 4) {
-					table.setModel(new KozmetickiTretmanMenadzerModel(mkt));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Tretmani");
-					
-					obrisi.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(obrisi.isEnabled()) {
-								mkt.obrisiKozmetickiTretman((int)table.getValueAt(table.getSelectedRow(), 0));
-								osveziPodatke();
-							}
-
-						}
-					});
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								IzmenaKozmetickogTretmanaDialog izmena = new IzmenaKozmetickogTretmanaDialog(mks, MenadzerFrame.this, (KozmetickiTretman)table.getValueAt(table.getSelectedRow(),1));
-							}
-
-						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								KreiranjeKozmetickogTretmanaDialog ktd = new KreiranjeKozmetickogTretmanaDialog(mks, MenadzerFrame.this);
-							}
-
-						}
-					});
-					
-				}else if(prikazCB.getSelectedIndex() == 5) {
-					table.setModel(new ZakazanTretmanMenadzerModel(mz));
-					podesiTabelu();
-					osveziPodatke();
-					naslovTabele.setText("Svi Zakazani Tretmani");
-					izmeni.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(izmeni.isEnabled()) {
-								try {
-									if(((String)table.getValueAt(table.getSelectedRow(), 7)).equals(MenadzerKozmetickiTretmani.status.ZAKAZAN.toString())) {
-										ZakazanTretman zt = (ZakazanTretman)table.getValueAt(table.getSelectedRow(), 1);
-										IzmenaZakazanogTretmanaDialog izt = new IzmenaZakazanogTretmanaDialog(zt, mks, MenadzerFrame.this);
-									}
-
-								}catch(Exception ex) {
-								}
-							}
-						}
-					});
-					dodaj.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if(dodaj.isEnabled()) {
-								ZakazivanjeTretmanaDialog ztd = new ZakazivanjeTretmanaDialog(mks, null, MenadzerFrame.this);
-							}
-
-						}
-					});
-				}
+					}
+				});
 			}
 		}
+	}
 	public void podesiTabelu() {
 		ListSelectionModel model = table.getSelectionModel();
 		model.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

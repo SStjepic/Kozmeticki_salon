@@ -31,6 +31,9 @@ public class KozmetickiTretmanModel extends AbstractTableModel  {
 
 	@Override
 	public Object getValueAt(int red, int kolona) {
+		if(getRowCount() == 0) {
+			return 0;
+		}
 		KozmetickiTretman kt = mkt.kozmetickiTretmaniZaTabelu().get(red);
 		switch (kolona) {
 		case 0:

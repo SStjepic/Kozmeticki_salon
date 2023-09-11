@@ -31,7 +31,7 @@ public class KozmeticariGrafik extends JDialog  {
 		int brojac = 0;
 		for(String s: izvestaj.keySet()) {
 			grafik.addSeries(s, izvestaj.get(s));
-			boje[brojac] = new Color(r.nextInt(100),r.nextInt(150),r.nextInt(255) );
+			boje[brojac] = new Color(r.nextInt(250),r.nextInt(250),r.nextInt(250) );
 			brojac+=1;
 		}
 		grafik.getStyler().setSeriesColors(boje);

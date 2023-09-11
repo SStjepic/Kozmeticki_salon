@@ -1,7 +1,7 @@
 menadzer;Stefan;Stjepic;muski;065698421;Uzice;sstjepic;stefan123;false;visoka;35;0.0;18000.0;112500.0
 kozmeticar;Milos;Milakic;muski;1486464;Dusana Popovica 21;mmilakic;milos123;false;srednja;20;0.0;19000.0;53200.0;1;2;3;
-klijent;Milos;Misic;muski;061325688;Beograd;mmisic;misa123;false;2490.0;false
-klijent;Marta;Micic;zenski;0653288658;Bulevar Revolucije 23;mmicic;marta123;false;11400.0;true
+klijent;Milos;Misic;muski;061325688;Beograd;mmisic;misa123;false;4000.0;false
+klijent;Marta;Micic;zenski;0653288658;Bulevar Revolucije 23;mmicic;marta123;false;3200.0;false
 recepcioner;Nikola;Nikolic;muski;063548256;Uzice;nnikolic;nikola123;false;srednja;27;0.0;16000.0;56560.0
 kozmeticar;Marko;Markovic;muski;4584668;Uzice;mmarkovic;marko123;false;srednja;25;0.0;19000.0;63175.0;1;
-klijent;Petar;Peric;muski;064252369;Novi Sad;pperic;petar123;false;8700.0;false
+klijent;Petar;Peric;muski;064252369;Novi Sad;pperic;petar123;false;5910.0;false

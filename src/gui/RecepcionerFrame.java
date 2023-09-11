@@ -116,8 +116,9 @@ public class RecepcionerFrame extends JFrame {
 		for(TipKozmetickogTretmana tkt: mkt.getSviTipovi()) {
 			tipCB.addItem(tkt);
 		}
-		tipCB.addItemListener(new izdvojKozmetickeTretmane());
 		tipCB.setSelectedIndex(-1);
+		tipCB.addItemListener(new izdvojKozmetickeTretmane());
+
 		contentPane.add(tipCB, "cell 7 1 2 1,growx");
 		
 		JButton btnNewButton_1 = new JButton("Svi zakazani tretmani");
@@ -125,6 +126,8 @@ public class RecepcionerFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				sortiranjeTabela.setRowFilter(RowFilter.regexFilter("(?i)" + MenadzerKozmetickiTretmani.status.ZAKAZAN.toString()));
+				tipCB.setSelectedIndex(-1);
+				datum.setDate(null);
 			}
 		});
 		
@@ -133,6 +136,9 @@ public class RecepcionerFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				sortiranjeTabela.setRowFilter(RowFilter.regexFilter("(?i)" + ""));
+				tipCB.setSelectedIndex(-1);
+				datum.setDate(null);
+			
 			}
 		});
 		contentPane.add(btnNewButton_2, "cell 1 2,growx");
@@ -282,16 +288,12 @@ public class RecepcionerFrame extends JFrame {
 	
 	class izdvojKozmetickeTretmane implements ItemListener {
 		public void itemStateChanged(ItemEvent e) {
-			ArrayList<KozmetickiTretman> tkt = mkt.odgovarajuciKozmetickiTretmani((TipKozmetickogTretmana) tipCB.getSelectedItem());
-			
-			if(tkt.isEmpty()) {
-			}
-			else {
+			if(e.getItem()!=null) {
 				sortirajPrikaz();
 			}
-			}
+
 		}
-	
+	}
 	class omoguciOtkazivanje implements ListSelectionListener {
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
@@ -315,13 +317,18 @@ public class RecepcionerFrame extends JFrame {
 	
 	public void sortirajPrikaz() {
 		List<RowFilter<Object,Object>> filteri = new ArrayList<RowFilter<Object,Object>>(5);
-		try {
-		    filteri.add(RowFilter.numberFilter(ComparisonType.BEFORE, Double.parseDouble(cenaDo.getText().trim())+1, 3));
-		} catch (Exception e) {
+		if(!cenaDo.getText().equals("")) {
+			try {
+				
+			    filteri.add(RowFilter.numberFilter(ComparisonType.BEFORE, Double.parseDouble(cenaDo.getText().trim())+1, 6));
+			} catch (Exception e) {
+			}
 		}
-		try {
-		    filteri.add(RowFilter.numberFilter(ComparisonType.AFTER, Double.parseDouble(cenaOd.getText().trim())-1, 3));
-		} catch (Exception e) {
+		if(!cenaOd.getText().equals("")) {
+			try {
+			    filteri.add(RowFilter.numberFilter(ComparisonType.AFTER, Double.parseDouble(cenaOd.getText().trim())-1, 6));
+			} catch (Exception e) {
+			}
 		}
 		if(tipCB.getSelectedItem()!=null) {
 			filteri.add(RowFilter.regexFilter("(?i)" + ((TipKozmetickogTretmana)tipCB.getSelectedItem()).getNaziv()));

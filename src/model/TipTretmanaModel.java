@@ -4,19 +4,19 @@ import javax.swing.table.AbstractTableModel;
 
 import menadzeri.MenadzerKozmetickiTretmani;
 import usluge.KozmetickiTretman;
+import usluge.TipKozmetickogTretmana;
 
-public class KozmetickiTretmanMenadzerModel extends AbstractTableModel {
-	
+public class TipTretmanaModel extends AbstractTableModel {
 	private MenadzerKozmetickiTretmani mkt;
-	private String[] koloneNazivi = {"ID", "Naziv","Tip", "Vreme trajanja", "Cena" };
+	private String[] koloneNazivi = {"ID", "Naziv"};
 	
-	public KozmetickiTretmanMenadzerModel(MenadzerKozmetickiTretmani mkt) {
+	public TipTretmanaModel(MenadzerKozmetickiTretmani mkt) {
 		this.mkt = mkt;
 	}
 	
 	@Override
 	public int getRowCount() {
-		return mkt.kozmetickiTretmaniZaTabelu().size();
+		return mkt.sviTipoviTretmana().size();
 	}
 
 	@Override
@@ -29,18 +29,12 @@ public class KozmetickiTretmanMenadzerModel extends AbstractTableModel {
 		if(getRowCount() == 0) {
 			return 0;
 		}
-		KozmetickiTretman kt = mkt.kozmetickiTretmaniZaTabelu().get(red);
+		TipKozmetickogTretmana tkt = mkt.sviTipoviTretmana().get(red);
 		switch (kolona) {
 		case 0:
-			return kt.getidKozmetickogTretmana();
+			return tkt.getSifra();
 		case 1:
-			return kt;
-		case 2:
-			return kt.getTipTretmana().getNaziv();
-		case 3:
-			return kt.getVremeTrajanja();
-		case 4:
-			return mkt.cenovnikUsluga().nadjiCenuKozmetickogTretmana(kt);
+			return tkt.getNaziv();
 		default:
 			return null;
 		}
@@ -55,4 +49,5 @@ public class KozmetickiTretmanMenadzerModel extends AbstractTableModel {
 	public Class<?> getColumnClass(int kolonaIndex) {
 		return this.getValueAt(0, kolonaIndex).getClass();
 	}
+
 }

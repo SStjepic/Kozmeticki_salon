@@ -41,6 +41,9 @@ public class RealizacijaTretmanaModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int red, int kolona) {
+		if(getRowCount() == 0) {
+			return 0;
+		}
 		KozmetickiTretman kt = mkt.kozmetickiTretmaniZaTabelu().get(red);
 		ArrayList<Double> lista= mz.prihodIRealizacijaZaPeriodPoTretmanu(odDana, doDana, kt.getidKozmetickogTretmana());
 		switch (kolona) {

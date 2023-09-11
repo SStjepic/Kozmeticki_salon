@@ -46,6 +46,9 @@ public class RealizacijaZakazanihTretmanaModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int red, int kolona) {
+		if(getRowCount() == 0) {
+			return 0;
+		}
 		HashMap<String, Integer> lista = mz.realizacijaKozmetickihTretmana(odDana, doDana);
 		List<String> kljucevi = new ArrayList<String>(lista.keySet());
 		String vrsta =  kljucevi.get(red);

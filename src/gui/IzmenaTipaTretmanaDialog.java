@@ -38,11 +38,10 @@ public class IzmenaTipaTretmanaDialog extends JDialog {
 	private JFrame roditelj;
 	private TipKozmetickogTretmana tkt;
 	private JLabel validacija;
-	private JComboBox comboBox;
 	private JButton potvrdi;
-	private JButton btnNewButton;
+	private JTextField stariNaziv;
 
-	public IzmenaTipaTretmanaDialog(MenadzerKozmetickiTretmani mkt, JFrame roditelj) {
+	public IzmenaTipaTretmanaDialog(MenadzerKozmetickiTretmani mkt, JFrame roditelj, TipKozmetickogTretmana tkt) {
 		this.mkt = mkt;
 		this.roditelj = roditelj;
 		
@@ -53,21 +52,19 @@ public class IzmenaTipaTretmanaDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new MigLayout("", "[][][97.00,grow][100.00][109.00]", "[][][][][][][]"));
 		{
-			JLabel lblNewLabel_2 = new JLabel("Tipovi tretmana");
+			JLabel lblNewLabel_2 = new JLabel("Tip tretmana");
 			lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 12));
 			contentPanel.add(lblNewLabel_2, "cell 1 0,alignx trailing");
 		}
 		{
-			comboBox = new JComboBox();
-			for(TipKozmetickogTretmana tt: mkt.getSviTipovi()) {
-				comboBox.addItem(tt);
-			}
-			comboBox.setSelectedIndex(-1);
-			contentPanel.add(comboBox, "cell 2 0 2 1,growx");
-			comboBox.addItemListener(new zapocniIzmenu());
+			stariNaziv = new JTextField();
+			stariNaziv.setEditable(false);
+			contentPanel.add(stariNaziv, "cell 2 0 2 1,growx");
+			stariNaziv.setColumns(10);
+			stariNaziv.setText(tkt.getNaziv());
 		}
 		{
-			JLabel lblNewLabel = new JLabel("Šifra tipatretmana");
+			JLabel lblNewLabel = new JLabel("Šifra tipa tretmana");
 			lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 12));
 			contentPanel.add(lblNewLabel, "cell 1 1,alignx trailing");
 		}
@@ -76,6 +73,8 @@ public class IzmenaTipaTretmanaDialog extends JDialog {
 			contentPanel.add(sifra, "cell 2 1 2 1,growx");
 			sifra.setColumns(10);
 			sifra.setEditable(false);
+			Integer s = tkt.getSifra();
+			sifra.setText(s.toString());
 		}
 		{
 			JLabel lblNewLabel_1 = new JLabel("Naziv");
@@ -86,25 +85,21 @@ public class IzmenaTipaTretmanaDialog extends JDialog {
 			naziv = new JTextField();
 			contentPanel.add(naziv, "cell 2 2 2 1,growx");
 			naziv.setColumns(10);
+			naziv.setText(tkt.getNaziv());
 		}
 		{
 			potvrdi = new JButton("Potvrdi");
 			potvrdi.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					try {
-						TipKozmetickogTretmana tkt = (TipKozmetickogTretmana) comboBox.getSelectedItem();
-						if((mkt.proveriJedinstvenostKozmetickogTretmana(naziv.getText().trim())||naziv.getText().trim().equals(tkt.getNaziv())) && !naziv.getText().trim().equals("")) {
-							validacija.setText("");
-							mkt.azurirajTipKozmetickogTretmana(tkt.getSifra(), naziv.getText().trim());
-							((MenadzerFrame)roditelj).osveziPodatke();
-							potvrdi.setEnabled(false);
-							comboBox.setEditable(true);
-						}
-						else {
-							validacija.setText("Naziv je prazan string ili već postoji u sistemu");
-						}
-					} catch (Exception e2) {
+					String noviNaziv = naziv.getText();
+					if(!noviNaziv.equals(tkt.getNaziv()) && mkt.proveriJedinstvenostTipaTretmana(noviNaziv)) {
+						mkt.azurirajTipKozmetickogTretmana(tkt.getSifra(), noviNaziv);
+						((MenadzerFrame)roditelj).osveziPodatke();
+						dispose();
+					}
+					else {
+						validacija.setText("Novi naziv tipa tretmana postoji u sistemu");
 					}
 
 				}
@@ -125,33 +120,11 @@ public class IzmenaTipaTretmanaDialog extends JDialog {
 			});
 			contentPanel.add(btnNewButton_1, "cell 3 5,growx");
 		}
-		{
-			btnNewButton = new JButton("Obriši");
-			btnNewButton.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					try {
-						TipKozmetickogTretmana tkt = (TipKozmetickogTretmana) comboBox.getSelectedItem();
-						mkt.obrisiTipKozmetickogTretmana(tkt.getSifra());
-						((MenadzerFrame)roditelj).osveziPodatke();
-						dispose();
-					} catch (Exception e2) {
-					}
-
-				}
-			});
-			contentPanel.add(btnNewButton, "cell 4 5,growx");
-		}
+		
+		
+		
+		
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
-	}
-	class zapocniIzmenu implements ItemListener {
-		public void itemStateChanged(ItemEvent e) {
-			Integer sifraTipa = ((TipKozmetickogTretmana)comboBox.getSelectedItem()).getSifra();
-			sifra.setText(sifraTipa.toString());
-			naziv.setText(((TipKozmetickogTretmana)comboBox.getSelectedItem()).getNaziv());
-			potvrdi.setEnabled(true);
-			comboBox.setEditable(false);
-		}
 	}
 }
